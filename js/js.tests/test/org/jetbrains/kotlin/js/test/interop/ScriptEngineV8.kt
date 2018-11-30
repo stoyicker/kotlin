@@ -11,11 +11,13 @@ import com.eclipsesource.v8.V8Object
 import com.eclipsesource.v8.utils.V8ObjectUtils
 import org.jetbrains.kotlin.test.KotlinTestUtils
 import java.io.File
+import com.eclipsesource.v8.utils.V8Executor
 
 class ScriptEngineV8 : ScriptEngine {
     companion object {
         // It's important that this is not created per test, but rather per process.
         val LIBRARY_PATH_BASE = KotlinTestUtils.tmpDirForReusableFolder("j2v8_library_path").path
+        val worker = WebWorkerRunner()
     }
 
     override fun <T> releaseObject(t: T) {
@@ -50,7 +52,7 @@ class ScriptEngineV8 : ScriptEngine {
         }
     }
 
-    private val myRuntime: V8 = V8.createV8Runtime("global", LIBRARY_PATH_BASE)
+    private val myRuntime: V8 = V8.createV8Runtime("global", LIBRARY_PATH_BASE).also { worker.configureWorker(it) }
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> eval(script: String): T {
@@ -74,6 +76,7 @@ class ScriptEngineV8 : ScriptEngine {
     }
 
     override fun loadFile(path: String) {
+        worker.mainScriptPath = path
         myRuntime.executeVoidScript(File(path).bufferedReader().use { it.readText() }, path, 0)
     }
 
@@ -100,4 +103,44 @@ class ScriptEngineV8Lazy : ScriptEngine {
     override fun restoreState() = engine.restoreState()
 
     private val engine by lazy { ScriptEngineV8() }
+}
+
+class WebWorkerRunner {
+    lateinit var mainScriptPath: String
+
+    fun start(worker: V8Object, vararg s: String) {
+        val script = File(File(mainScriptPath).parent + File.pathSeparator + s[0]).bufferedReader().use { it.readText() }
+        val executor = object : V8Executor(script, true, "messageHandler") {
+            override fun setup(runtime: V8) {
+                configureWorker(runtime)
+            }
+        }
+        worker.runtime.registerV8Executor(worker, executor)
+        executor.start()
+    }
+
+    fun terminate(worker: V8Object, vararg s: Any?) {
+        worker.runtime.removeExecutor(worker)?.shutdown()
+    }
+
+    fun postMessage(worker: V8Object, vararg s: String) {
+        worker.runtime.getExecutor(worker)?.postMessage(*s)
+    }
+
+    fun configureWorker(runtime: V8) {
+        runtime.registerJavaMethod(this, "start", "Worker", arrayOf(V8Object::class.java, Array<String>::class.java), true)
+        val worker = runtime.getObject("Worker")
+        val prototype = runtime.executeObjectScript("Worker.prototype")
+        prototype.registerJavaMethod(
+            this, "terminate", "terminate", arrayOf(V8Object::class.java, Array<Any>::class.java),
+            true
+        )
+        prototype.registerJavaMethod(
+            this, "postMessage", "postMessage",
+            arrayOf(V8Object::class.java, Array<String>::class.java), true
+        )
+        worker.setPrototype(prototype)
+        worker.release()
+        prototype.release()
+    }
 }
