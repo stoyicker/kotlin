@@ -35,6 +35,7 @@ import org.jetbrains.kotlin.config.getFacetPlatformByConfigurationElement
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.jetbrains.kotlin.idea.framework.*
 import org.jetbrains.kotlin.idea.refactoring.toVirtualFile
+import org.jetbrains.kotlin.platform.idePlatformKind
 import org.jetbrains.kotlin.resolve.*
 import org.jetbrains.kotlin.utils.PathUtil
 
@@ -132,7 +133,7 @@ class KotlinNonJvmSourceRootConverterProvider : ConverterProvider("kotlin-non-jv
                     getFacetElement(KotlinFacetType.ID)
                         ?.getChild(JpsFacetSerializer.CONFIGURATION_TAG)
                         ?.getFacetPlatformByConfigurationElement()
-                        ?.kind?.compilerPlatform
+
 
                 private fun ModuleSettings.detectPlatformByDependencies(): TargetPlatform? {
                     var hasCommonStdlib = false
