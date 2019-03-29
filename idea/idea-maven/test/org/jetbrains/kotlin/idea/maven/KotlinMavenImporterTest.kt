@@ -45,11 +45,11 @@ import org.jetbrains.kotlin.idea.framework.JSLibraryKind
 import org.jetbrains.kotlin.idea.framework.KotlinSdkType
 import org.jetbrains.kotlin.idea.project.languageVersionSettings
 import org.jetbrains.kotlin.idea.refactoring.toPsiFile
-import org.jetbrains.kotlin.js.resolve.JsPlatform
 import org.jetbrains.kotlin.platform.impl.*
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.resolve.DefaultBuiltInPlatforms
+import org.jetbrains.kotlin.resolve.JvmTarget
 import org.jetbrains.kotlin.resolve.TargetPlatform
-import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 import org.junit.Assert
 import java.io.File
 
@@ -2965,8 +2965,8 @@ class KotlinMavenImporterTest : MavenImportingTestCase() {
 
         assertImporterStatePresent()
 
-        checkStableModuleName("project", "project", JvmPlatform, isProduction = true)
-        checkStableModuleName("project", "project", JvmPlatform, isProduction = false)
+        checkStableModuleName("project", "project", DefaultBuiltInPlatforms.jvmPlatform, isProduction = true)
+        checkStableModuleName("project", "project", DefaultBuiltInPlatforms.jvmPlatform, isProduction = false)
     }
 
     fun testStableModuleNameWhileUsngMaven_JS() {
@@ -3026,8 +3026,8 @@ class KotlinMavenImporterTest : MavenImportingTestCase() {
 
         // Note that we check name induced by '-output-file' -- may be it's not the best
         // decision, but we don't have a better one
-        checkStableModuleName("project", "test", JsPlatform, isProduction = true)
-        checkStableModuleName("project", "test", JsPlatform, isProduction = false)
+        checkStableModuleName("project", "test", DefaultBuiltInPlatforms.jsPlatform, isProduction = true)
+        checkStableModuleName("project", "test", DefaultBuiltInPlatforms.jsPlatform, isProduction = false)
     }
 
     private fun checkStableModuleName(projectName: String, expectedName: String, platform: TargetPlatform, isProduction: Boolean) {

@@ -31,14 +31,11 @@ import org.jetbrains.jps.model.module.JpsModuleSourceRootType
 import org.jetbrains.jps.model.module.JpsTypedModuleSourceRoot
 import org.jetbrains.jps.model.serialization.facet.JpsFacetSerializer
 import org.jetbrains.jps.model.serialization.module.JpsModuleRootModelSerializer.*
-import org.jetbrains.kotlin.analyzer.common.CommonPlatform
 import org.jetbrains.kotlin.config.getFacetPlatformByConfigurationElement
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.jetbrains.kotlin.idea.framework.*
 import org.jetbrains.kotlin.idea.refactoring.toVirtualFile
-import org.jetbrains.kotlin.js.resolve.JsPlatform
-import org.jetbrains.kotlin.resolve.TargetPlatform
-import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
+import org.jetbrains.kotlin.resolve.*
 import org.jetbrains.kotlin.utils.PathUtil
 
 class KotlinNonJvmSourceRootConverterProvider : ConverterProvider("kotlin-non-jvm-source-roots") {
@@ -51,10 +48,10 @@ class KotlinNonJvmSourceRootConverterProvider : ConverterProvider("kotlin-non-jv
         )
 
         private val TargetPlatform.stdlibDetector: ((Array<VirtualFile>) -> Boolean)?
-            get() = when (this) {
-                is JvmPlatform -> { roots -> JavaRuntimeDetectionUtil.getRuntimeJar(roots.toList()) != null }
-                is JsPlatform -> { roots -> JsLibraryStdDetectionUtil.getJsStdLibJar(roots.toList()) != null }
-                is CommonPlatform -> { roots -> getLibraryJar(roots, PathUtil.KOTLIN_STDLIB_COMMON_JAR_PATTERN) != null }
+            get() = when {
+                isJvm() -> { roots -> JavaRuntimeDetectionUtil.getRuntimeJar(roots.toList()) != null }
+                isJs() -> { roots -> JsLibraryStdDetectionUtil.getJsStdLibJar(roots.toList()) != null }
+                isCommon() -> { roots -> getLibraryJar(roots, PathUtil.KOTLIN_STDLIB_COMMON_JAR_PATTERN) != null }
                 else -> null
             }
     }
@@ -91,7 +88,7 @@ class KotlinNonJvmSourceRootConverterProvider : ConverterProvider("kotlin-non-jv
         val platform by lazy {
             val explicitKind = explicitKind
             val kind = if (explicitKind is KotlinLibraryKind) explicitKind else detectLibraryKind(getRoots())
-            kind?.platform ?: JvmPlatform
+            kind?.platform ?: DefaultBuiltInPlatforms.jvmPlatform // TODO: provide proper default
         }
 
         val isStdlib: Boolean
@@ -144,8 +141,9 @@ class KotlinNonJvmSourceRootConverterProvider : ConverterProvider("kotlin-non-jv
                         .asSequence()
                         .mapNotNull { createLibInfo(it, this) }
                         .forEach {
-                            when (val platform = it.platform) {
-                                is CommonPlatform -> {
+                            val platform = it.platform
+                            when {
+                                platform.isCommon() -> {
                                     if (!hasCommonStdlib && it.isStdlib) {
                                         hasCommonStdlib = true
                                     }
@@ -157,13 +155,13 @@ class KotlinNonJvmSourceRootConverterProvider : ConverterProvider("kotlin-non-jv
                             }
                         }
 
-                    return if (hasCommonStdlib) CommonPlatform else null
+                    return if (hasCommonStdlib) DefaultBuiltInPlatforms.commonPlatform else null
                 }
 
                 private fun ModuleSettings.detectPlatform(): TargetPlatform {
                     return detectPlatformByFacet()
                         ?: detectPlatformByDependencies()
-                        ?: JvmPlatform
+                        ?: DefaultBuiltInPlatforms.jvmPlatform
                 }
 
                 private fun ModuleSettings.getSourceFolderElements(): List<Element> {
@@ -192,7 +190,7 @@ class KotlinNonJvmSourceRootConverterProvider : ConverterProvider("kotlin-non-jv
                     }
 
                     val targetPlatform = settings.detectPlatform()
-                    return (targetPlatform != JvmPlatform)
+                    return (!targetPlatform.isJvm())
                 }
 
                 override fun process(settings: ModuleSettings) {
