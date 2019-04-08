@@ -51,7 +51,7 @@ public class TypeProjectionImpl extends TypeProjectionBase {
 
     @NotNull
     @Override
-    public TypeProjection refine(ModuleDescriptor moduleDescriptor) {
+    public TypeProjection refine(@NotNull ModuleDescriptor moduleDescriptor) {
         return new TypeProjectionImpl(projection, type.refine(moduleDescriptor));
     }
 }
