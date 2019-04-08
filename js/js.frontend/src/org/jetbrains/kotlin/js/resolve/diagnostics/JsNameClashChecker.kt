@@ -149,7 +149,7 @@ class JsNameClashChecker(
                         .flatMap { module.getPackage(it).fragments }
                         .forEach { collect(it, scope)  }
             }
-            is ClassDescriptor -> collect(descriptor.defaultType.refine(moduleDescriptor).memberScope, scope)
+            is ClassDescriptor -> collect(descriptor.defaultType.memberScope, scope)
         }
         scope
     }
