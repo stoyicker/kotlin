@@ -90,6 +90,8 @@ class KtCompilingExecutor(file: ScratchFile) : ScratchExecutor(file) {
                                 val commandLine = createCommandLine(psiFile, file.getModule(), result.mainClassName, tempDir.path)
 
                                 LOG.printDebugMessage(commandLine.commandLineString)
+                                println(commandLine.parametersList.parametersString.length)
+                                println(commandLine.parametersList.parametersString)
 
                                 val processHandler = CapturingProcessHandler(commandLine)
                                 val executionResult = processHandler.runProcessWithProgressIndicator(indicator, TIMEOUT_MS)
