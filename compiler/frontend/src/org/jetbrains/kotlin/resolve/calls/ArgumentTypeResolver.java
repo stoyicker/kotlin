@@ -80,6 +80,7 @@ public class ArgumentTypeResolver {
         this.constantExpressionEvaluator = constantExpressionEvaluator;
         this.functionPlaceholders = functionPlaceholders;
         this.moduleDescriptor = moduleDescriptor;
+        this.refineKotlinTypeChecker = refineKotlinTypeChecker;
     }
 
     // component dependency cycle
@@ -88,7 +89,7 @@ public class ArgumentTypeResolver {
         this.expressionTypingServices = expressionTypingServices;
     }
 
-    public static boolean isSubtypeOfForArgumentType(
+    public boolean isSubtypeOfForArgumentType(
             @NotNull KotlinType actualType,
             @NotNull KotlinType expectedType
     ) {
@@ -98,6 +99,7 @@ public class ArgumentTypeResolver {
         }
         return KotlinTypeChecker.DEFAULT.isSubtypeOf(actualType, expectedType);
     }
+
 
     public void checkTypesWithNoCallee(
             @NotNull CallResolutionContext<?> context
