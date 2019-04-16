@@ -3,12 +3,19 @@ package foobar
 import bar.baz
 import d0.AnotherSupertype
 
-fun expectAnotherSupertype(x: AnotherSupertype) {
+fun <T : Any> expectAnotherSupertype(x: T, y: T): T {
+    x.hashCode() + y.hashCode()
+    return x
+}
+
+fun foo(x: AnotherSupertype) {
     x.hashCode()
 }
 
-fun main() {
+fun main(x: AnotherSupertype) {
     baz().foo()
     // TODO: support subtyping too
-    expectAnotherSupertype(<error descr="[TYPE_MISMATCH] Type mismatch: inferred type is Unit but AnotherSupertype was expected">baz().foo()</error>)
+    foo(baz())
+
+    expectAnotherSupertype(x, baz()).another()
 }

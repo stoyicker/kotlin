@@ -1,3 +1,5 @@
 package d0
 
-interface AnotherSupertype
+interface AnotherSupertype {
+    fun another()
+}
