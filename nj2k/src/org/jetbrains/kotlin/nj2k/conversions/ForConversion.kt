@@ -185,7 +185,7 @@ class ForConversion(private val context: ConversionContext) : RecursiveApplicabl
                 convertBound(bound, if (inclusiveComparison) 0 else -1),
                 JKKtSingleValueOperatorToken(KtTokens.RANGE),
                 context.symbolProvider
-            )!!
+            )
         }
     }
 
@@ -203,7 +203,7 @@ class ForConversion(private val context: ConversionContext) : RecursiveApplicabl
             JKKtLiteralExpressionImpl(abs(correction).toString(), JKLiteralExpression.LiteralType.INT),
             JKKtSingleValueOperatorToken(sign),
             context.symbolProvider
-        )!!
+        )
     }
 
     private fun indicesIterationRange(
@@ -265,7 +265,7 @@ class ForConversion(private val context: ConversionContext) : RecursiveApplicabl
     }
 
     private fun toIndicesCall(javaSizeCall: JKQualifiedExpression): JKQualifiedExpression? {
-        val psiContext = javaSizeCall.psi ?: return null
+        javaSizeCall.psi ?: return null
         val selector = JKFieldAccessExpressionImpl(
             context.symbolProvider.provideByFqName(
                 "kotlin/collections/indices",

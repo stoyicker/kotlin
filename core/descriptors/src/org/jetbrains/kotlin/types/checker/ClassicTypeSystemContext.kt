@@ -396,6 +396,7 @@ interface ClassicTypeSystemContext : TypeSystemInferenceExtensionContext {
 
     override fun SimpleTypeMarker.replaceArguments(newArguments: List<TypeArgumentMarker>): SimpleTypeMarker {
         require(this is SimpleType, this::errorMessage)
+        @Suppress("UNCHECKED_CAST")
         return this.replace(newArguments as List<TypeProjection>)
     }
 
