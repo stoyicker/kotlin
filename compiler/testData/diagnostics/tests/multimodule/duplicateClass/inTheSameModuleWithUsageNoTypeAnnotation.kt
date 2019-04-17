@@ -19,5 +19,5 @@ class A {
 
 fun test() {
     val a = B().a
-    a.foo()
+    a.<!UNRESOLVED_REFERENCE!>foo<!>()
 }
