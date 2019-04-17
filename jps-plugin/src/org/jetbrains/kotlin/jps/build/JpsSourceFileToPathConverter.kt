@@ -27,8 +27,10 @@ internal class JpsSourceFileToPathConverter(jpsProject: JpsProject) : SourceFile
 
     override fun toFile(path: String): File =
         when {
-            baseDirPath != null && path.startsWith(PROJECT_DIR_PLACEHOLDER) ->
-                File(baseDirPath + path.substring(PROJECT_DIR_PLACEHOLDER.length))
+            path.startsWith(PROJECT_DIR_PLACEHOLDER) -> {
+                val basePath = baseDirPath ?: error("Could not get project root dir")
+                File(basePath + path.substring(PROJECT_DIR_PLACEHOLDER.length))
+            }
             else -> File(path)
         }
 }
