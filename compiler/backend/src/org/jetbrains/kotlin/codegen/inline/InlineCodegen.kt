@@ -168,6 +168,7 @@ abstract class InlineCodegen<out T : BaseExpressionCodegen>(
         }
     }
 
+    @Suppress("UNREACHABLE_CODE")
     private fun canSkipStackSpillingOnInline(methodNode: MethodNode): Boolean {
         // Temporary disable this optimization until
         // https://issuetracker.google.com/issues/68796377 is fixed
