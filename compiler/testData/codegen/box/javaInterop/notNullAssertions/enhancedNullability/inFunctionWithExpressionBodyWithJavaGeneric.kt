@@ -1,4 +1,5 @@
 // !LANGUAGE: +StrictJavaNullabilityAssertions
+// WITH_RUNTIME
 // TARGET_BACKEND: JVM
 // SKIP_JDK6
 // See KT-8135
@@ -8,10 +9,10 @@
 fun box(): String {
     try {
         J().test()
-        return "OK"
+        return "Fail: KotlinNullPointerException should have been thrown"
     }
-    catch (e: Throwable) {
-        return "Fail: SHOULD NOT throw"
+    catch (e: KotlinNullPointerException) {
+        return "OK"
     }
 }
 

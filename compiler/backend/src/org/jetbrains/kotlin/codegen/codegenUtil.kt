@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.codegen.coroutines.continuationAsmType
 import org.jetbrains.kotlin.codegen.coroutines.unwrapInitialDescriptorForSuspendFunction
 import org.jetbrains.kotlin.codegen.inline.NUMBERED_FUNCTION_PREFIX
 import org.jetbrains.kotlin.codegen.inline.ReificationArgument
+import org.jetbrains.kotlin.codegen.intrinsics.IntrinsicMethods
 import org.jetbrains.kotlin.codegen.intrinsics.TypeIntrinsics
 import org.jetbrains.kotlin.codegen.optimization.common.asSequence
 import org.jetbrains.kotlin.codegen.state.GenerationState
@@ -50,6 +51,8 @@ import org.jetbrains.kotlin.types.ErrorUtils
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.TypeUtils
 import org.jetbrains.kotlin.types.checker.KotlinTypeChecker
+import org.jetbrains.kotlin.types.isNullable
+import org.jetbrains.kotlin.types.typeUtil.isTypeParameter
 import org.jetbrains.kotlin.utils.DFS
 import org.jetbrains.org.objectweb.asm.Label
 import org.jetbrains.org.objectweb.asm.Opcodes.*
@@ -659,4 +662,19 @@ private fun generateLambdaForRunSuspend(
 
     lambdaBuilder.done()
     return lambdaBuilder.thisName
+}
+
+fun generateNullCheckOnCallSite(resolvedCall: ResolvedCall<*>, v: InstructionAdapter) {
+    val unsubstitutedReturnType = resolvedCall.candidateDescriptor?.original?.returnType
+    val inferredReturnType = resolvedCall.run { resultingDescriptor?.returnType ?: candidateDescriptor?.returnType }
+
+    if (unsubstitutedReturnType?.run { isTypeParameter() && isNullable() } == true && inferredReturnType?.isNullable() == false) {
+        val notNullLabel = Label()
+        v.run {
+            dup()
+            ifnonnull(notNullLabel)
+            invokestatic(IntrinsicMethods.INTRINSICS_CLASS_NAME, "throwNpe", "()V", false)
+            mark(notNullLabel)
+        }
+    }
 }
