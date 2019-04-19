@@ -18,13 +18,13 @@ package org.jetbrains.kotlin.resolve.jvm
 
 import org.jetbrains.kotlin.resolve.calls.results.TypeSpecificityComparator
 import org.jetbrains.kotlin.types.model.KotlinTypeMarker
-import org.jetbrains.kotlin.types.model.SimpleTypeMarker
 import org.jetbrains.kotlin.types.model.TypeSystemInferenceExtensionContextDelegate
 
 class JvmTypeSpecificityComparator(val context: TypeSystemInferenceExtensionContextDelegate) : TypeSpecificityComparator {
 
     override fun isDefinitelyLessSpecific(specific: KotlinTypeMarker, general: KotlinTypeMarker): Boolean = with(context) {
-        if (specific is SimpleTypeMarker || general !is SimpleTypeMarker) return false
+        val simpleGeneral = general.asSimpleType()
+        if (!specific.isFlexible() || simpleGeneral == null) return false
 
         // general is inflexible
         val flexibility = specific.asFlexibleType()!!
@@ -33,12 +33,12 @@ class JvmTypeSpecificityComparator(val context: TypeSystemInferenceExtensionCont
         //    foo(int) and foo(Integer)
         // if we do not discriminate one of them, any call to foo(kotlin.Int) will result in overload resolution ambiguity
         // so, for such cases, we discriminate Integer in favour of int
-        if (!general.isPrimitiveType() || !flexibility.lowerBound().isPrimitiveType()) {
+        if (!simpleGeneral.isPrimitiveType() || !flexibility.lowerBound().isPrimitiveType()) {
             return false
         }
 
         // Int? >< Int!
-        if (general.isMarkedNullable()) return false
+        if (simpleGeneral.isMarkedNullable()) return false
         // Int! lessSpecific Int
         return true
     }
