@@ -232,6 +232,8 @@ class PSICallResolver(
         }
 
         diagnostics.firstIsInstanceOrNull<ManyCandidatesCallDiagnostic>()?.let {
+            kotlinToResolvedCallTransformer.transformAndReport<D>(result, context, tracingStrategy)
+
             return transformManyCandidatesAndRecordTrace(it, tracingStrategy, trace)
         }
 
