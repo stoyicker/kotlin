@@ -45,7 +45,6 @@ class RenameKotlinParameterProcessor : RenameKotlinPsiProcessor() {
             result: MutableList<UsageInfo>
     ) {
         val declaration = element.namedUnwrappedElement as? KtNamedDeclaration ?: return
-//        val descriptor = declaration.unsafeResolveToDescriptor() as VariableDescriptor
 
         val collisions = SmartList<UsageInfo>()
         checkRedeclarations(declaration, newName, collisions)

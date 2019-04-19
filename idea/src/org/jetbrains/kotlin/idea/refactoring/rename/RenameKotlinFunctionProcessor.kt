@@ -97,7 +97,6 @@ class RenameKotlinFunctionProcessor : RenameKotlinPsiProcessor() {
             result: MutableList<UsageInfo>
     ) {
         val declaration = element.unwrapped as? KtNamedFunction ?: return
-//        val descriptor = declaration.unsafeResolveToDescriptor()
         checkConflictsAndReplaceUsageInfos(element, allRenames, result)
         result += SmartList<UsageInfo>().also { collisions ->
             checkRedeclarations(declaration, newName, collisions)

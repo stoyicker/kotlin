@@ -32,7 +32,6 @@ class RenameKotlinTypeParameterProcessor : RenameKotlinPsiProcessor() {
             result: MutableList<UsageInfo>
     ) {
         val declaration = element as? KtTypeParameter ?: return
-//        val descriptor = declaration.unsafeResolveToDescriptor()
         checkRedeclarations(declaration, newName, result)
     }
 }
