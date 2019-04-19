@@ -37,6 +37,7 @@ import org.jetbrains.kotlin.types.TypeUtils.DONT_CARE
 import org.jetbrains.kotlin.types.checker.SimpleClassicTypeSystemContext
 import org.jetbrains.kotlin.types.checker.TypeCheckingProcedure
 import org.jetbrains.kotlin.types.checker.TypeCheckingProcedureCallbacks
+import org.jetbrains.kotlin.types.checker.requireOrDescribe
 import org.jetbrains.kotlin.types.model.KotlinTypeMarker
 import org.jetbrains.kotlin.types.model.TypeParameterMarker
 import org.jetbrains.kotlin.types.model.TypeSystemInferenceExtensionContext
@@ -439,8 +440,8 @@ open class ConstraintSystemBuilderImpl(private val mode: Mode = ConstraintSystem
                 registerTypeVariables(CallHandle.NONE, typeParameters.cast())
 
             override fun addSubtypeConstraint(subType: KotlinTypeMarker, superType: KotlinTypeMarker) {
-                require(subType is UnwrappedType)
-                require(superType is UnwrappedType)
+                requireOrDescribe(subType is UnwrappedType, subType)
+                requireOrDescribe(superType is UnwrappedType, superType)
                 addSubtypeConstraint(subType, superType, ConstraintPositionKind.VALUE_PARAMETER_POSITION.position(counter++))
             }
 

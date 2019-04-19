@@ -18,6 +18,8 @@ import org.jetbrains.kotlin.types.model.*
 import org.jetbrains.kotlin.types.model.CaptureStatus
 import org.jetbrains.kotlin.types.typeUtil.asTypeProjection
 import org.jetbrains.kotlin.types.typeUtil.contains
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 interface ClassicTypeSystemContext : TypeSystemInferenceExtensionContext {
     override fun TypeConstructorMarker.isDenotable(): Boolean {
@@ -525,5 +527,20 @@ fun Variance.convertVariance(): TypeVariance {
         Variance.INVARIANT -> TypeVariance.INV
         Variance.IN_VARIANCE -> TypeVariance.IN
         Variance.OUT_VARIANCE -> TypeVariance.OUT
+    }
+}
+
+
+@Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
+@UseExperimental(ExperimentalContracts::class)
+fun requireOrDescribe(condition: Boolean, value: Any?) {
+    contract {
+        returns() implies condition
+    }
+    require(condition) {
+        val typeInfo = if (value != null) {
+            ", type = '${value::class}'"
+        } else ""
+        "Unexpected: value = '$value'$typeInfo"
     }
 }

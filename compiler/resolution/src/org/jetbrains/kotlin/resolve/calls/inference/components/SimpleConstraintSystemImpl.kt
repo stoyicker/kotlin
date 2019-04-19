@@ -26,6 +26,7 @@ import org.jetbrains.kotlin.resolve.calls.inference.model.TypeVariableFromCallab
 import org.jetbrains.kotlin.resolve.calls.inference.substitute
 import org.jetbrains.kotlin.resolve.calls.results.SimpleConstraintSystem
 import org.jetbrains.kotlin.types.TypeConstructorSubstitution
+import org.jetbrains.kotlin.types.checker.requireOrDescribe
 import org.jetbrains.kotlin.types.model.KotlinTypeMarker
 import org.jetbrains.kotlin.types.model.TypeParameterMarker
 import org.jetbrains.kotlin.types.model.TypeSubstitutorMarker
@@ -40,7 +41,7 @@ class SimpleConstraintSystemImpl(constraintInjector: ConstraintInjector, builtIn
     override fun registerTypeVariables(typeParameters: Collection<TypeParameterMarker>): TypeSubstitutorMarker {
 
         val substitutionMap = typeParameters.associate {
-            require(it is TypeParameterDescriptor)
+            requireOrDescribe(it is TypeParameterDescriptor, it)
             val variable = TypeVariableFromCallableDescriptor(it)
             csBuilder.registerVariable(variable)
 
@@ -48,7 +49,7 @@ class SimpleConstraintSystemImpl(constraintInjector: ConstraintInjector, builtIn
         }
         val substitutor = TypeConstructorSubstitution.createByConstructorsMap(substitutionMap).buildSubstitutor()
         for (typeParameter in typeParameters) {
-            require(typeParameter is TypeParameterDescriptor)
+            requireOrDescribe(typeParameter is TypeParameterDescriptor, typeParameter)
             for (upperBound in typeParameter.upperBounds) {
                 addSubtypeConstraint(substitutor.substitute(typeParameter.defaultType), substitutor.substitute(upperBound.unwrap()))
             }
